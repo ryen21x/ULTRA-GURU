@@ -464,36 +464,33 @@ gmd(
       };
 
       let header =
-`·:·:·:·:· *${(botName || "ULTRA GURU MD").toUpperCase()}* ·:·:·:·:·
-    ✧ _POWERED BY GURUTECH_ ✧
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
-${expiryBannerMenu}
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
-         🗂️ _Complete Command Vault_
-
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-  ✦ 🤖 Bot     : ${monospace(botName)}
-  ✦ ⚙️ Mode    : ${monospace((botMode || "public").toUpperCase())}
-  ✦ ⚡ Prefix  : ${monospace(botPrefix)}
-  ✦ 📦 Version : ${monospace("v" + (botVersion || "5.0.0"))}
-  ✦ 📊 Cmds    : ${monospace(totalCommands.toString())}
-  ✦ ⏱️ Uptime  : ${monospace(uptime)}
-  ✦ 👤 User    : ${monospace(pushName)}
-  ✦ 💾 RAM     : ${monospace(ram)}
-  ✦ 🕒 Time    : ${monospace(time)}
-  ✦ 📅 Date    : ${monospace(date)}
-  ✦ 🌍 Zone    : ${monospace(timeZone)}
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${readmore}\n\n`;
+`꧁༺═══════════════════════༻꧂
+   *${(botName || "ULTRA GURU MD").toUpperCase()}*
+     ༒ _GURUTECH LAB_ ༒
+꧁༺═══════════════════════༻꧂
+  ${expiryBannerMenu}
+꧁༺═══════════════════════༻꧂
+  ༄ 🤖 Bot     » ${monospace(botName || "ULTRA GURU")}
+  ༄ ⚙️ Mode    » ${monospace((botMode || "public").toUpperCase())}
+  ༄ ⚡ Prefix  » ${monospace(botPrefix)}
+  ༄ 📦 Version » ${monospace("v" + (botVersion || "5.0.0"))}
+  ༄ 📊 Cmds    » ${monospace(totalCommands.toString())}
+  ༄ ⏱️ Uptime  » ${monospace(uptime)}
+  ༄ 👤 User    » ${monospace(pushName)}
+  ༄ 💾 RAM     » ${monospace(ram)}
+  ༄ 🕒 Time    » ${monospace(time)}
+  ༄ 📅 Date    » ${monospace(date)}
+  ༄ 🌍 Zone    » ${monospace(timeZone)}
+꧁༺═══════════════════════༻꧂${readmore}\n\n`;
 
       const formatCategory = (category, gmds) => {
         const icon = catIcons2[category.toLowerCase()] || "⚡";
-        let catText = `\n  ❯❯ ${icon} *${category.toUpperCase()}*\n`;
-        catText += `˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜\n`;
+        let catText = `\n꧁༺═ ${icon} *${category.toUpperCase()}* ════════༻꧂\n`;
         gmds.forEach((gmd) => {
           const prefix = gmd.isBody ? "" : botPrefix;
-          catText += `  ⌑ ${monospace(prefix + gmd.pattern)}\n`;
+          catText += `  ༄ ${monospace(prefix + gmd.pattern)}\n`;
         });
-        catText += `˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜\n`;
+        catText += `꧁༺═══════════════════════༻꧂\n`;
         return catText;
       };
 
