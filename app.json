@@ -46,6 +46,11 @@
       "description": "PostgreSQL connection URL. Leave blank to use auto-provisioned Heroku Postgres, or supply your own (Neon, Supabase, etc.). Falls back to SQLite if empty.",
       "required": false,
       "value": ""
+    },
+    "BOT_EXPIRY_DATE": {
+      "description": "Bot license expiry date (YYYY-MM-DD). Leave blank if bot has no expiry. When set, the menu will show ACTIVE/EXPIRY SOON/EXPIRED status.",
+      "required": false,
+      "value": ""
     }
   },
   "addons": [
