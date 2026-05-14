@@ -683,25 +683,7 @@ ${cmdLines}
   💬 _Reply_ *0* _to go back to menu_
 > ✨ _${botFooter}_`;
 
-      const giftedMess = {
-        image: { url: botPic },
-        caption: card.trim(),
-        contextInfo: {
-          mentionedJid: [sender],
-          forwardingScore: 5,
-          isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: newsletterJid,
-            newsletterName: botName,
-            serverMessageId: 0,
-          },
-        },
-      };
-      try {
-        await Gifted.sendMessage(from, giftedMess, { quoted: mek });
-      } catch (_) {
-        await Gifted.sendMessage(from, { text: card.trim() }, { quoted: mek });
-      }
+      await Gifted.sendMessage(from, { text: card.trim() }, { quoted: mek });
       await react("✅");
     } catch (e) {
       console.error(e);
