@@ -1,4 +1,10 @@
 require("events").EventEmitter.defaultMaxListeners = 960;
+
+if (!globalThis.crypto) {
+    const { webcrypto } = require("crypto");
+    globalThis.crypto = webcrypto;
+}
+
 require("./guru/gmdHelpers");
 
 const {
