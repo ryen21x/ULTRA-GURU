@@ -204,30 +204,37 @@ gmd(
         .join("\n");
 
       let menus =
-`·:·:·:·:· *${(botName || "ULTRA GURU MD").toUpperCase()}* ·:·:·:·:·
-    ✧ _POWERED BY GURUTECH_ ✧
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
+     ⚡ _The Ultimate WhatsApp Bot_ ⚡
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 ${expiryBannerMenus}
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-  ✦ 👤 ${pushName}  ·  ${botMode?.toUpperCase() || "PUBLIC"}
-  ✦ ⚡ Prefix [ ${botPrefix} ]  ·  v${botVersion || "5.0.0"}
-  ✦ 📊 ${totalCommands} cmds  ·  ⏱️ ${uptime}
-  ✦ 🕒 ${time}  ·  📅 ${date}
-  ✦ 🌍 ${timeZone}
+  👤 *User*    ›  ${pushName}
+  ⚙️ *Mode*    ›  ${botMode?.toUpperCase() || "PUBLIC"}
+  ⚡ *Prefix*  ›  ${monospace(botPrefix)}
+  📦 *Version* ›  v${botVersion || "5.0.0"}
+  📊 *Cmds*    ›  ${totalCommands} loaded
+  ⏱️ *Uptime*  ›  ${uptime}
+  🕒 *Time*    ›  ${time}
+  📅 *Date*    ›  ${date}
+  🌍 *Zone*    ›  ${timeZone}
 
-˜˜˜˜˜˜ ❯❯ *COMMAND CATEGORIES* ˜˜˜˜˜˜
+▬▬▬▬▬▬ ❯ *COMMAND CATEGORIES* ❮ ▬▬▬▬▬
 
 ${categoryLines}
 
-˜˜˜˜˜˜ ❯❯ *QUICK ACCESS* ˜˜˜˜˜˜˜˜˜˜˜
+▬▬▬▬▬▬▬ ❯ *QUICK ACCESS* ❮ ▬▬▬▬▬▬▬▬
 
-  ✦ \`${botPrefix}menu\`   ▸ Full cmd list
-  ✦ \`${botPrefix}list\`   ▸ All commands
-  ✦ \`${botPrefix}ping\`   ▸ Bot speed
-  ✦ \`${botPrefix}uptime\` ▸ Uptime
-  ✦ \`${botPrefix}repo\`   ▸ Source code
-  ✦ \`${botPrefix}help\`   ▸ Usage guide
+  ⚡ ${monospace(botPrefix + "menu")}   ›  Full command list
+  📋 ${monospace(botPrefix + "list")}   ›  All commands
+  🏓 ${monospace(botPrefix + "ping")}   ›  Bot response speed
+  ⏱️ ${monospace(botPrefix + "uptime")} ›  Bot uptime
+  🗂️ ${monospace(botPrefix + "repo")}   ›  Source code
+  ❓ ${monospace(botPrefix + "help")}   ›  Usage guide
 
 > ✨ _${botFooter}_`;
 
@@ -328,20 +335,28 @@ gmd(
       } catch {}
 
       let list =
-`·:·:·:·:· *${(botName || "ULTRA GURU MD").toUpperCase()}* ·:·:·:·:·
-    ✧ _POWERED BY GURUTECH_ ✧
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
+     ⚡ _The Ultimate WhatsApp Bot_ ⚡
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 ${expiryBannerList}
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
          📋 _Full Command Index_
 
-  ✦ 👤 ${monospace(pushName)}  ·  ${monospace((botMode || "public").toUpperCase())}
-  ✦ ⚡ Prefix [ ${monospace(botPrefix)} ]  ·  v${monospace("v" + (botVersion || "5.0.0"))}
-  ✦ 📊 ${monospace(totalCommands.toString())} loaded  ·  ⏱️ ${monospace(uptime)}
-  ✦ 🕒 ${monospace(time)}  ·  📅 ${monospace(date)}
-  ✦ 🌍 ${monospace(timeZone)}  ·  💾 ${monospace(ram)}
+  ✦ 👤 *User*    ›  ${monospace(pushName)}
+  ✦ ⚙️ *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
+  ✦ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
+  ✦ 📦 *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
+  ✦ 📊 *Cmds*    ›  ${monospace(totalCommands.toString())} loaded
+  ✦ ⏱️ *Uptime*  ›  ${monospace(uptime)}
+  ✦ 🕒 *Time*    ›  ${monospace(time)}
+  ✦ 📅 *Date*    ›  ${monospace(date)}
+  ✦ 🌍 *Zone*    ›  ${monospace(timeZone)}
+  ✦ 💾 *RAM*     ›  ${monospace(ram)}
 
-˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜${readmore}\n\n`;
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬${readmore}\n\n`;
 
       const sortedCmds = commands
         .filter((gmd) => gmd.pattern && gmd.description)
@@ -472,24 +487,26 @@ gmd(
       };
 
       let header =
-`꧁༺═══════════════════════༻꧂
-   *${(botName || "ULTRA GURU MD").toUpperCase()}*
-     ༒ _GURUTECH LAB_ ༒
-꧁༺═══════════════════════༻꧂
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
+     ⚡ _The Ultimate WhatsApp Bot_ ⚡
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
   ${expiryBannerMenu}
-꧁༺═══════════════════════༻꧂
-  ༄ 🤖 Bot     » ${monospace(botName || "ULTRA GURU")}
-  ༄ ⚙️ Mode    » ${monospace((botMode || "public").toUpperCase())}
-  ༄ ⚡ Prefix  » ${monospace(botPrefix)}
-  ༄ 📦 Version » ${monospace("v" + (botVersion || "5.0.0"))}
-  ༄ 📊 Cmds    » ${monospace(totalCommands.toString())}
-  ༄ ⏱️ Uptime  » ${monospace(uptime)}
-  ༄ 👤 User    » ${monospace(pushName)}
-  ༄ 💾 RAM     » ${monospace(ram)}
-  ༄ 🕒 Time    » ${monospace(time)}
-  ༄ 📅 Date    » ${monospace(date)}
-  ༄ 🌍 Zone    » ${monospace(timeZone)}
-꧁༺═══════════════════════༻꧂${readmore}\n\n`;
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+  ༄ 🤖 *Bot*     ›  ${monospace(botName || "ULTRA GURU")}
+  ༄ ⚙️ *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
+  ༄ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
+  ༄ 📦 *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
+  ༄ 📊 *Cmds*    ›  ${monospace(totalCommands.toString())}
+  ༄ ⏱️ *Uptime*  ›  ${monospace(uptime)}
+  ༄ 👤 *User*    ›  ${monospace(pushName)}
+  ༄ 💾 *RAM*     ›  ${monospace(ram)}
+  ༄ 🕒 *Time*    ›  ${monospace(time)}
+  ༄ 📅 *Date*    ›  ${monospace(date)}
+  ༄ 🌍 *Zone*    ›  ${monospace(timeZone)}
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬${readmore}\n\n`;
 
       const formatCategory = (category, gmds) => {
         const icon = catIcons2[category.toLowerCase()] || "⚡";
@@ -683,7 +700,26 @@ gmd(
       updated_at,
       owner,
     } = repoData;
-    const messageText = `Hello *_\( {pushName}_,*\nThis is * \){botName},* A Whatsapp Bot Built by *${ownerName},* Enhanced with Amazing Features to Make Your Whatsapp Communication and Interaction Experience Amazing\n\n*❲❒❳ ɴᴀᴍᴇ:* ${name}\n*❲❒❳ sᴛᴀʀs:* ${stargazers_count}\n*❲❒❳ ғᴏʀᴋs:* ${forks_count}\n*❲❒❳ ᴄʀᴇᴀᴛᴇᴅ ᴏɴ:* ${new Date(created_at).toLocaleDateString()}\n*❲❒❳ ʟᴀsᴛ ᴜᴘᴅᴀᴛᴇᴅ:* ${new Date(updated_at).toLocaleDateString()}`;
+    const messageText =
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🗂️ *${(botName || "ULTRA GURU MD").toUpperCase()} REPO* 🗂️
+     ⚡ _Open Source · Free Forever_ ⚡
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+👋 Hey *${pushName}!*
+_${botName || "ULTRA GURU MD"} is a powerful multi-device WhatsApp bot built by *${ownerName}*, packed with amazing features to enhance your experience._
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+  📦 *Name*     ›  ${monospace(name)}
+  ⭐ *Stars*    ›  ${monospace(String(stargazers_count))}
+  🍴 *Forks*    ›  ${monospace(String(forks_count))}
+  🗓️ *Created*  ›  ${monospace(new Date(created_at).toLocaleDateString())}
+  🔄 *Updated*  ›  ${monospace(new Date(updated_at).toLocaleDateString())}
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+> ✨ _${botFooter}_`;
 
     const dateNow = Date.now();
     await sendButtons(Gifted, from, {
