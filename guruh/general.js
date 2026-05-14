@@ -219,10 +219,10 @@ gmd(
         .join("\n");
 
       let menus =
-`╔═══════════════════════════════╗
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
      ⚡ _The Ultimate WhatsApp Bot_ ⚡
-╚═══════════════════════════════╝
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
 ${expiryBannerMenus}
@@ -350,10 +350,10 @@ gmd(
       } catch {}
 
       let list =
-`╔═══════════════════════════════╗
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
      ⚡ _The Ultimate WhatsApp Bot_ ⚡
-╚═══════════════════════════════╝
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
 ${expiryBannerList}
@@ -502,10 +502,10 @@ gmd(
       };
 
       let header =
-`╔═══════════════════════════════╗
+`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
      ⚡ _The Ultimate WhatsApp Bot_ ⚡
-╚═══════════════════════════════╝
+꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
 ${expiryBannerMenu}
