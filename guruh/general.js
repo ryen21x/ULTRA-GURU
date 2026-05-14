@@ -415,8 +415,7 @@ const CAT_ICONS = {
   sports: "⚽", extras: "✨", texttools: "🔡", restrictions: "🚫",
 };
 
-const NUM_EMOJIS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟",
-  "1️⃣1️⃣","1️⃣2️⃣","1️⃣3️⃣","1️⃣4️⃣","1️⃣5️⃣","1️⃣6️⃣","1️⃣7️⃣","1️⃣8️⃣","1️⃣9️⃣","2️⃣0️⃣"];
+const CAT_ORDER = ["general","ai","downloader","tools","search","games","group","owner","settings","fun","converter","religion","texttools","notes","channels","sports","extras","restrictions","sticker","media"];
 
 function buildCategorizedMenu(commands) {
   const categorized = {};
@@ -436,6 +435,16 @@ function buildCategorizedMenu(commands) {
   return categorized;
 }
 
+function getSortedCats(categorized) {
+  return Object.keys(categorized).sort((a, b) => {
+    const ai = CAT_ORDER.indexOf(a), bi = CAT_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 gmd(
   {
     pattern: "menu",
@@ -447,7 +456,7 @@ gmd(
   async (from, Gifted, conText) => {
     const {
       mek, sender, react, pushName, botPic, botMode, botVersion,
-      botName, botFooter, timeZone, botPrefix, newsletterJid, reply,
+      botName, botFooter, botPrefix, newsletterJid, reply,
     } = conText;
     try {
       function formatUptime(s) {
@@ -462,61 +471,55 @@ gmd(
       const totalCmds = commands.filter(c => c.pattern && !c.dontAddCommandList).length;
 
       const { getSetting: getSettingMenu } = require("../guru/database/settings");
-      let expiryLine = "♾️ _Lifetime License · Always Active_";
+      let expiryLine = "♾️  LIFETIME LICENSE";
+      let expiryDetail = "No expiry set · Always active";
       try {
         const expiryRaw = await getSettingMenu("BOT_EXPIRY_DATE");
         if (expiryRaw) {
           const exp = new Date(expiryRaw);
           const dLeft = Math.ceil((exp - now) / 86400000);
-          if (dLeft <= 0) expiryLine = `🔴 _License Expired · ${exp.toDateString()}_`;
-          else if (dLeft <= 7) expiryLine = `🟡 _Expiring Soon · ${dLeft} day(s) left_`;
-          else expiryLine = `🟢 _Active · ${dLeft} days remaining_`;
+          const hLeft = Math.floor(((exp - now) % 86400000) / 3600000);
+          const mLeft = Math.floor(((exp - now) % 3600000) / 60000);
+          if (dLeft <= 0) {
+            expiryLine = "🔴  EXPIRED";
+            expiryDetail = `License ended · ${exp.toDateString()}`;
+          } else if (dLeft <= 7) {
+            expiryLine = "🟡  EXPIRY SOON";
+            expiryDetail = `${dLeft}d ${hLeft}h ${mLeft}m left`;
+          } else {
+            expiryLine = "🟢  ACTIVE LICENSE";
+            expiryDetail = `${exp.toLocaleDateString("en-GB")}, (${dLeft}d ${hLeft}h ${mLeft}m left)`;
+          }
         }
       } catch {}
 
       const categorized = buildCategorizedMenu(commands);
-      const sortedCats = Object.keys(categorized).sort((a, b) => {
-        const ORDER = ["general","ai","downloader","tools","search","games","group","owner","settings","fun","converter","religion","texttools","notes","channels","sports","extras","restrictions","sticker","media"];
-        const ai = ORDER.indexOf(a), bi = ORDER.indexOf(b);
-        if (ai === -1 && bi === -1) return a.localeCompare(b);
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
-      });
+      const sortedCats = getSortedCats(categorized);
 
       const catLines = sortedCats.map((cat, i) => {
         const icon = CAT_ICONS[cat] || "⚡";
         const count = categorized[cat].length;
-        const num = NUM_EMOJIS[i] || `${i + 1}.`;
-        const label = cat.charAt(0).toUpperCase() + cat.slice(1);
-        const padLabel = label.padEnd(12, " ");
-        return `  ${num}  ${icon}  *${padLabel}*  ·  _${count} cmds_`;
+        const label = (cat.charAt(0).toUpperCase() + cat.slice(1)).toUpperCase();
+        return `> │◦➛ ${i + 1}. ${icon} ${label}  _(${count} cmds)_`;
       }).join("\n");
 
       const menuText =
-`꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
-  🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}*
-  ⚡ _The Ultimate WhatsApp Bot_
-꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
-  🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
-  ${expiryLine}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ༄ ⏱️  *Uptime*  ›  ${monospace(uptime)}
-  ༄ ⚡  *Prefix*  ›  ${monospace(botPrefix)}
-  ༄ 👤  *User*    ›  ${monospace(pushName)}
-  ༄ ⚙️  *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
-  ༄ 📊  *Cmds*    ›  ${monospace(totalCmds + " loaded")}
-  ༄ 📦  *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📂  *COMMAND CATEGORIES*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`╰► Hey, @${sender.split("@")[0]}
+╭───〔  *${(botName || "ULTRA GURU MD").toUpperCase()}*  〕──────┈⊷𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭
+├──────────────────────
+│✵│▸ 📊 *TOTAL COMMANDS:* ${totalCmds}
+│✵│▸ ⏱️ *UPTIME:* ${uptime}
+│✵│▸ ⚡ *PREFIX:* ${botPrefix}
+│✵│▸ ⚙️ *MODE:* ${(botMode || "public").toUpperCase()}
+│✵│▸ 📦 *VERSION:* v${botVersion || "5.0.0"}
+│✵│▸ 🔑 *LICENSE:* ${expiryLine}
+│✵│▸ 📅 *EXPIRY:* ${expiryDetail}
+╰──────────────────────────────⊷
 
+╭───◇ *𝗖𝗔𝗧𝗘𝗚𝗢𝗥𝗜𝗘𝗦* ◇──────┈⊷
+│「 Reply with a number below 」
 ${catLines}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  💬  _Reply with a number (1–${sortedCats.length})_
-  💬  _to view that category's commands_
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+╰─────────────────────┈⊷
 > ✨ _${botFooter}_`;
 
       const giftedMess = {
@@ -549,7 +552,7 @@ ${catLines}
 gmd(
   {
     on: "body",
-    pattern: /^\s*([1-9]|1\d|20)\s*$/,
+    pattern: "menucat_num_trigger",
     dontAddCommandList: true,
     category: "general",
   },
@@ -559,52 +562,40 @@ gmd(
       botPrefix, newsletterJid, reply, body,
     } = conText;
     try {
-      const num = parseInt((body || "").trim(), 10);
-      if (!num || isNaN(num)) return;
+      const rawBody = (body || "").trim();
+      if (!/^\d{1,2}$/.test(rawBody)) return;
+      const num = parseInt(rawBody, 10);
+      if (!num || isNaN(num) || num < 1) return;
 
       const categorized = buildCategorizedMenu(commands);
-      const sortedCats = Object.keys(categorized).sort((a, b) => {
-        const ORDER = ["general","ai","downloader","tools","search","games","group","owner","settings","fun","converter","religion","texttools","notes","channels","sports","extras","restrictions","sticker","media"];
-        const ai = ORDER.indexOf(a), bi = ORDER.indexOf(b);
-        if (ai === -1 && bi === -1) return a.localeCompare(b);
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
-      });
-
-      if (num < 1 || num > sortedCats.length) return;
+      const sortedCats = getSortedCats(categorized);
+      if (num > sortedCats.length) return;
 
       const cat = sortedCats[num - 1];
       const cmds = categorized[cat];
       const icon = CAT_ICONS[cat] || "⚡";
-      const label = cat.charAt(0).toUpperCase() + cat.slice(1);
-      const numEmoji = NUM_EMOJIS[num - 1] || `${num}.`;
-
-      const CARD_WIDTH = 38;
-      const divider  = "─".repeat(CARD_WIDTH);
-      const top      = `╔${"═".repeat(CARD_WIDTH)}╗`;
-      const titleRow = `║  ${numEmoji}  ${icon}  ${label.toUpperCase()} COMMANDS`.padEnd(CARD_WIDTH + 1) + "║";
-      const countRow = `║  📊 ${cmds.length} commands in this category`.padEnd(CARD_WIDTH + 1) + "║";
-      const mid      = `╠${"═".repeat(CARD_WIDTH)}╣`;
-      const bot      = `╚${"═".repeat(CARD_WIDTH)}╝`;
+      const label = (cat.charAt(0).toUpperCase() + cat.slice(1)).toUpperCase();
 
       const cmdLines = cmds.map(cmd => {
         const prefix = cmd.isBody ? "" : botPrefix;
-        const pat = monospace(prefix + cmd.pattern);
+        const pat = (prefix + cmd.pattern).padEnd(18, " ");
         const desc = cmd.description
-          ? cmd.description.length > 22 ? cmd.description.slice(0, 20) + "…" : cmd.description
+          ? (cmd.description.length > 28 ? cmd.description.slice(0, 26) + "…" : cmd.description)
           : "—";
-        return `║  ◈ ${pat}\n║     › _${desc}_`;
-      }).join("\n" + `║  ${divider.slice(0, 34)}` + "\n");
+        return `> │◈ *${pat}* › _${desc}_`;
+      }).join("\n> │\n");
 
       const card =
-`${top}
-${titleRow}
-${countRow}
-${mid}
+`╭───〔 *${icon} ${label} COMMANDS* 〕──────┈⊷𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭
+├──────────────────────
+│✵│▸ 📊 *TOTAL:* ${cmds.length} commands
+│✵│▸ ⚡ *PREFIX:* ${botPrefix}
+├──────────────────────
+│
 ${cmdLines}
-${bot}
-  _Reply_ ${monospace(botPrefix + "menu")} _to go back_
+│
+╰─────────────────────┈⊷
+  💬 _Reply_ *${botPrefix}menu* _to go back_
 > ✨ _${botFooter}_`;
 
       const giftedMess = {
