@@ -220,8 +220,8 @@ gmd(
 
       let menus =
 `꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  ⚡ _The Ultimate WhatsApp Bot_ ⚡
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
-     ⚡ _The Ultimate WhatsApp Bot_ ⚡
 ꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
@@ -351,8 +351,8 @@ gmd(
 
       let list =
 `꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  ⚡ _The Ultimate WhatsApp Bot_ ⚡
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
-     ⚡ _The Ultimate WhatsApp Bot_ ⚡
 ꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
@@ -503,8 +503,8 @@ gmd(
 
       let header =
 `꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
+  ⚡ _The Ultimate WhatsApp Bot_ ⚡
   🤖 *${(botName || "ULTRA GURU MD").toUpperCase()}* 🤖
-     ⚡ _The Ultimate WhatsApp Bot_ ⚡
 ꧁✦━━━━━━━━━━━━━━━━━━━━━━━━━✦꧂
   🔰 *GᴜʀᴜTᴇᴄʜ Lᴀʙ*  ·  _Official Build_
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
