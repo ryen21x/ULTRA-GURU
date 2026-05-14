@@ -558,17 +558,102 @@ gmd(
   },
   async (from, Gifted, conText) => {
     const {
-      mek, sender, react, pushName, botPic, botName, botFooter,
-      botPrefix, newsletterJid, reply, body,
+      mek, sender, react, pushName, botPic, botMode, botVersion,
+      botName, botFooter, botPrefix, newsletterJid, reply, body,
     } = conText;
     try {
       const rawBody = (body || "").trim();
       if (!/^\d{1,2}$/.test(rawBody)) return;
       const num = parseInt(rawBody, 10);
-      if (!num || isNaN(num) || num < 1) return;
+      if (isNaN(num) || num < 0) return;
 
       const categorized = buildCategorizedMenu(commands);
       const sortedCats = getSortedCats(categorized);
+
+      // 0 = go back to main menu
+      if (num === 0) {
+        function formatUptime(s) {
+          const d = Math.floor(s / 86400); s %= 86400;
+          const h = Math.floor(s / 3600); s %= 3600;
+          const m = Math.floor(s / 60);
+          return `${d}d ${h}h ${m}m`;
+        }
+        const uptime = formatUptime(Math.floor(process.uptime()));
+        const totalCmds = commands.filter(c => c.pattern && !c.dontAddCommandList).length;
+
+        const { getSetting: getSettingMenu } = require("../guru/database/settings");
+        let expiryLine = "♾️  LIFETIME LICENSE";
+        let expiryDetail = "No expiry set · Always active";
+        try {
+          const now = new Date();
+          const expiryRaw = await getSettingMenu("BOT_EXPIRY_DATE");
+          if (expiryRaw) {
+            const exp = new Date(expiryRaw);
+            const dLeft = Math.ceil((exp - now) / 86400000);
+            const hLeft = Math.floor(((exp - now) % 86400000) / 3600000);
+            const mLeft = Math.floor(((exp - now) % 3600000) / 60000);
+            if (dLeft <= 0) {
+              expiryLine = "🔴  EXPIRED";
+              expiryDetail = `License ended · ${exp.toDateString()}`;
+            } else if (dLeft <= 7) {
+              expiryLine = "🟡  EXPIRY SOON";
+              expiryDetail = `${dLeft}d ${hLeft}h ${mLeft}m left`;
+            } else {
+              expiryLine = "🟢  ACTIVE LICENSE";
+              expiryDetail = `${exp.toLocaleDateString("en-GB")}, (${dLeft}d ${hLeft}h ${mLeft}m left)`;
+            }
+          }
+        } catch {}
+
+        const catLines = sortedCats.map((cat, i) => {
+          const icon = CAT_ICONS[cat] || "⚡";
+          const count = categorized[cat].length;
+          const label = (cat.charAt(0).toUpperCase() + cat.slice(1)).toUpperCase();
+          return `> │◦➛ ${i + 1}. ${icon} ${label}  _(${count} cmds)_`;
+        }).join("\n");
+
+        const menuText =
+`╰► Hey, @${sender.split("@")[0]}
+╭───〔  *${(botName || "ULTRA GURU MD").toUpperCase()}*  〕──────┈⊷𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭𑲭
+├──────────────────────
+│✵│▸ 📊 *TOTAL COMMANDS:* ${totalCmds}
+│✵│▸ ⏱️ *UPTIME:* ${uptime}
+│✵│▸ ⚡ *PREFIX:* ${botPrefix}
+│✵│▸ ⚙️ *MODE:* ${(botMode || "public").toUpperCase()}
+│✵│▸ 📦 *VERSION:* v${botVersion || "5.0.0"}
+│✵│▸ 🔑 *LICENSE:* ${expiryLine}
+│✵│▸ 📅 *EXPIRY:* ${expiryDetail}
+╰──────────────────────────────⊷
+
+╭───◇ *𝗖𝗔𝗧𝗘𝗚𝗢𝗥𝗜𝗘𝗦* ◇──────┈⊷
+│「 Reply with a number below 」
+${catLines}
+╰─────────────────────┈⊷
+> ✨ _${botFooter}_`;
+
+        const giftedMess = {
+          image: { url: botPic },
+          caption: menuText.trim(),
+          contextInfo: {
+            mentionedJid: [sender],
+            forwardingScore: 5,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: newsletterJid,
+              newsletterName: botName,
+              serverMessageId: 0,
+            },
+          },
+        };
+        try {
+          await Gifted.sendMessage(from, giftedMess, { quoted: mek });
+        } catch (_) {
+          await Gifted.sendMessage(from, { text: menuText.trim() }, { quoted: mek });
+        }
+        return await react("✅");
+      }
+
+      // 1–N = show category card
       if (num > sortedCats.length) return;
 
       const cat = sortedCats[num - 1];
@@ -595,7 +680,7 @@ gmd(
 ${cmdLines}
 │
 ╰─────────────────────┈⊷
-  💬 _Reply_ *${botPrefix}menu* _to go back_
+  💬 _Reply_ *0* _to go back to menu_
 > ✨ _${botFooter}_`;
 
       const giftedMess = {
