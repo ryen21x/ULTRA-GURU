@@ -11,16 +11,34 @@ const resetUpdateFlag = () => {
     updateCheckedThisSession = false;
 };
 
+const fetchLatestCommit = async (axios, repo) => {
+    const { data } = await axios.get(
+        `https://api.github.com/repos/${repo}/commits/main`,
+        {
+            timeout: 20000,
+            headers: {
+                "Accept": "application/vnd.github.v3+json",
+                "Cache-Control": "no-cache",
+                "User-Agent": "ULTRA-GURU-Bot",
+            },
+        }
+    );
+
+    if (!data || typeof data.sha !== "string" || data.sha.length < 10) {
+        const msg = data?.message || JSON.stringify(data).slice(0, 200);
+        throw new Error(`GitHub API returned invalid response: ${msg}`);
+    }
+
+    return data;
+};
+
 const runUpdate = async (repo, Gifted, ownerJid) => {
     const axios = require("axios");
     const AdmZip = require("adm-zip");
     const { execSync } = require("child_process");
     const { copyFolderSync } = require("./gmdFunctions");
 
-    const { data: commitData } = await axios.get(
-        `https://api.github.com/repos/${repo}/commits/main`,
-        { timeout: 20000 }
-    );
+    const commitData = await fetchLatestCommit(axios, repo);
     const latestHash = commitData.sha;
     const currentHash = await getCommitHash();
 
@@ -136,6 +154,7 @@ const checkAndAutoUpdate = async (Gifted) => {
         }
     } catch (err) {
         console.error("❌ [AutoUpdate] Check failed:", err.message);
+        updateCheckedThisSession = false;
     }
 };
 
