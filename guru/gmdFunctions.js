@@ -202,16 +202,22 @@ async function processSessionId(sessionId) {
 
         // Handle base64 session (direct)
         if (b64data.startsWith('H4sI')) {
-            const compressedData = Buffer.from(b64data, 'base64');
-            const decompressedData = zlib.gunzipSync(compressedData);
-            
-            if (!fs.existsSync(sessionDir)) {
-                fs.mkdirSync(sessionDir, { recursive: true });
+            try {
+                const compressedData = Buffer.from(b64data, 'base64');
+                const decompressedData = zlib.gunzipSync(compressedData);
+                
+                if (!fs.existsSync(sessionDir)) {
+                    fs.mkdirSync(sessionDir, { recursive: true });
+                }
+                
+                fs.writeFileSync(sessionPath, decompressedData, "utf8");
+                console.log("✅ Session File Loaded (Direct Base64)");
+                return true;
+            } catch (gzipError) {
+                console.log("⚠️  Session decompression failed:", gzipError.message);
+                console.log("⚠️  SESSION_ID appears corrupted. Falling back to interactive setup.");
+                return false;
             }
-            
-            fs.writeFileSync(sessionPath, decompressedData, "utf8");
-            console.log("✅ Session File Loaded (Direct Base64)");
-            return true;
         }
         
         // If it's not H4sI, it might be a raw session string
