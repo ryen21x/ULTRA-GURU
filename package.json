@@ -9,8 +9,8 @@
     "npm": "9.9.4"
   },
   "scripts": {
-    "start": "fuser -k 5000/tcp 2>/dev/null; sleep 0.5; node --max-old-space-size=256 index.js",
-    "dev": "fuser -k 5000/tcp 2>/dev/null; sleep 0.5; node --max-old-space-size=256 index.js"
+    "start": "fuser -k 5000/tcp 2>/dev/null; sleep 2; node --max-old-space-size=256 index.js",
+    "dev": "fuser -k 5000/tcp 2>/dev/null; sleep 2; node --max-old-space-size=256 index.js"
   },
   "keywords": [
     "gurutech",
