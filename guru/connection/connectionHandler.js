@@ -10,9 +10,47 @@ const { setupVVTracker } = require("../gmdFunctions2");
 
 const RECONNECT_DELAY = 5000;
 const MAX_RECONNECT_ATTEMPTS = 50;
+const WATCHDOG_INTERVAL = 90000;
+const WATCHDOG_TIMEOUT = 20000;
 
 let reconnectAttempts = 0;
 let channelReactListenerActive = false;
+let watchdogTimer = null;
+let isReconnecting = false;
+
+const withJitter = (ms) => ms + Math.floor(Math.random() * ms * 0.3);
+
+const clearWatchdog = () => {
+    if (watchdogTimer) {
+        clearInterval(watchdogTimer);
+        watchdogTimer = null;
+    }
+};
+
+const startWatchdog = (Gifted, startGifted) => {
+    clearWatchdog();
+    watchdogTimer = setInterval(async () => {
+        if (isReconnecting) return;
+        try {
+            const result = await Promise.race([
+                Gifted.query("ping"),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("watchdog timeout")), WATCHDOG_TIMEOUT)
+                ),
+            ]);
+        } catch (err) {
+            if (isReconnecting) return;
+            console.warn(`⚠️ Watchdog: socket unresponsive (${err.message}), forcing reconnect...`);
+            clearWatchdog();
+            isReconnecting = true;
+            try { Gifted.end(new Error("watchdog forced reconnect")); } catch (_) {}
+            setTimeout(() => {
+                isReconnecting = false;
+                startGifted();
+            }, withJitter(RECONNECT_DELAY));
+        }
+    }, WATCHDOG_INTERVAL);
+};
 
 const PROFESSOR_EMOJIS = [
     "🧑‍🏫", "👨‍🏫", "👩‍🏫", "🎓", "📚", "🔬", "🧪",
@@ -150,7 +188,6 @@ const setupNewsletterReactions = (Gifted) => {
 };
 
 // ── Stalk (presence tracking) ──────────────────────────────────────────────
-// Map<targetPhoneNum, [{requesterJid, label}]>
 const stalkTargets = new Map();
 
 const addStalkTarget = (targetNum, requesterJid, label) => {
@@ -213,12 +250,14 @@ const setupConnectionHandler = (
 
         if (connection === "connecting") {
             console.log("🕗 Connecting Bot...");
-            reconnectAttempts = 0;
         }
 
         if (connection === "open") {
             console.log("✅ Connection Instance is Online");
             reconnectAttempts = 0;
+            isReconnecting = false;
+
+            startWatchdog(Gifted, startGifted);
 
             if (callbacks.onOpen) {
                 await callbacks.onOpen(Gifted);
@@ -227,38 +266,50 @@ const setupConnectionHandler = (
             setTimeout(async () => {
                 await autoFollowOwnerChannels(Gifted);
             }, 3000);
-
         }
 
         if (connection === "close") {
+            clearWatchdog();
             channelReactListenerActive = false;
             resetRestrictionListeners();
-            const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-            console.log(`Connection closed due to: ${reason}`);
 
-            const handleReconnect = () => {
+            const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+            console.log(`⚠️ Connection closed. Reason code: ${reason}`);
+
+            const handleReconnect = (extraDelay = 0) => {
+                if (isReconnecting) return;
+                isReconnecting = true;
+
                 if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                    console.error(
-                        "Max reconnection attempts reached. Exiting...",
+                    console.warn(
+                        `⚠️ ${MAX_RECONNECT_ATTEMPTS} reconnect attempts exhausted — cooling down for 2 minutes before retrying...`,
                     );
-                    process.exit(1);
+                    reconnectAttempts = 0;
+                    setTimeout(() => {
+                        isReconnecting = false;
+                        startGifted();
+                    }, withJitter(120000));
+                    return;
                 }
+
                 reconnectAttempts++;
-                const delay = Math.min(
-                    RECONNECT_DELAY * Math.pow(2, reconnectAttempts - 1),
-                    300000,
+                const baseDelay = Math.min(
+                    RECONNECT_DELAY * Math.pow(1.5, reconnectAttempts - 1),
+                    120000,
                 );
+                const delay = withJitter(baseDelay) + extraDelay;
                 console.log(
-                    `🕗 Reconnection attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay}ms...`,
+                    `🔄 Reconnect attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${Math.round(delay / 1000)}s...`,
                 );
-                setTimeout(() => startGifted(), delay);
+                setTimeout(() => {
+                    isReconnecting = false;
+                    startGifted();
+                }, delay);
             };
 
             switch (reason) {
                 case DisconnectReason.badSession:
-                    console.log(
-                        "Bad session file, automatically deleted...please scan again",
-                    );
+                    console.log("❌ Bad session — deleting session file. Please re-link the bot.");
                     try {
                         await fs.remove(sessionDir);
                     } catch (e) {
@@ -268,16 +319,12 @@ const setupConnectionHandler = (
                     break;
 
                 case DisconnectReason.connectionReplaced:
-                    console.log(
-                        "Connection replaced, another new session opened",
-                    );
+                    console.log("❌ Connection replaced by another session. Shutting down this instance.");
                     process.exit(1);
                     break;
 
                 case DisconnectReason.loggedOut:
-                    console.log(
-                        "Device logged out, session file automatically deleted...please scan again",
-                    );
+                    console.log("❌ Device logged out — deleting session. Please re-link the bot.");
                     try {
                         await fs.remove(sessionDir);
                     } catch (e) {
@@ -289,19 +336,17 @@ const setupConnectionHandler = (
                 case DisconnectReason.connectionClosed:
                 case DisconnectReason.connectionLost:
                 case DisconnectReason.restartRequired:
-                    console.log("🕗 Reconnecting...");
+                    console.log("🔄 Transient disconnect — reconnecting...");
                     handleReconnect();
                     break;
 
                 case DisconnectReason.timedOut:
-                    console.log("Connection timed out, reconnecting...");
-                    setTimeout(() => handleReconnect(), RECONNECT_DELAY * 2);
+                    console.log("⏱️ Connection timed out — reconnecting with extra delay...");
+                    handleReconnect(RECONNECT_DELAY);
                     break;
 
                 default:
-                    console.log(
-                        `Unknown disconnect reason: ${reason}, attempting reconnection...`,
-                    );
+                    console.log(`⚠️ Unknown disconnect reason (${reason}) — attempting reconnect...`);
                     handleReconnect();
             }
         }
