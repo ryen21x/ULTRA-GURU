@@ -51,6 +51,13 @@ const getJidFromLidUsingMetadata = (participant, groupMeta) => {
 const getJidFromParticipant = async (Gifted, participant, groupMeta = null) => {
     if (!participant) return participant;
 
+    if (typeof participant === "object") {
+        participant = participant.id || participant.jid || participant.pn || participant.phoneNumber || null;
+        if (!participant) return null;
+    }
+
+    participant = String(participant);
+
     if (participant.endsWith("@s.whatsapp.net")) {
         return participant;
     }
