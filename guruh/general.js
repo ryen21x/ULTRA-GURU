@@ -228,12 +228,12 @@ gmd(
 ${expiryBannerMenus}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  📦 *Version* ›  v${botVersion || "5.0.0"}
+  ⏱️ *Uptime*  ›  ${uptime}
+  ⚡ *Prefix*  ›  ${monospace(botPrefix)}
   👤 *User*    ›  ${pushName}
   ⚙️ *Mode*    ›  ${botMode?.toUpperCase() || "PUBLIC"}
-  ⚡ *Prefix*  ›  ${monospace(botPrefix)}
-  📦 *Version* ›  v${botVersion || "5.0.0"}
   📊 *Cmds*    ›  ${totalCommands} loaded
-  ⏱️ *Uptime*  ›  ${uptime}
   🕒 *Time*    ›  ${time}
   📅 *Date*    ›  ${date}
   🌍 *Zone*    ›  ${timeZone}
@@ -360,12 +360,12 @@ ${expiryBannerList}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
          📋 _Full Command Index_
 
+  ✦ 📦 *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
+  ✦ ⏱️ *Uptime*  ›  ${monospace(uptime)}
+  ✦ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
   ✦ 👤 *User*    ›  ${monospace(pushName)}
   ✦ ⚙️ *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
-  ✦ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
-  ✦ 📦 *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
   ✦ 📊 *Cmds*    ›  ${monospace(totalCommands.toString())} loaded
-  ✦ ⏱️ *Uptime*  ›  ${monospace(uptime)}
   ✦ 🕒 *Time*    ›  ${monospace(time)}
   ✦ 📅 *Date*    ›  ${monospace(date)}
   ✦ 🌍 *Zone*    ›  ${monospace(timeZone)}
@@ -510,17 +510,17 @@ gmd(
 ━━━━━━ 🔑 *LICENSE STATUS* ━━━━━━
 ${expiryBannerMenu}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ༄ 🤖 *Bot*     ›  ${monospace(botName || "ULTRA GURU")}
-  ༄ ⚙️ *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
-  ༄ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
   ༄ 📦 *Version* ›  ${monospace("v" + (botVersion || "5.0.0"))}
-  ༄ 📊 *Cmds*    ›  ${monospace(totalCommands.toString())}
   ༄ ⏱️ *Uptime*  ›  ${monospace(uptime)}
+  ༄ ⚡ *Prefix*  ›  ${monospace(botPrefix)}
   ༄ 👤 *User*    ›  ${monospace(pushName)}
-  ༄ 💾 *RAM*     ›  ${monospace(ram)}
+  ༄ ⚙️ *Mode*    ›  ${monospace((botMode || "public").toUpperCase())}
+  ༄ 📊 *Cmds*    ›  ${monospace(totalCommands.toString())}
   ༄ 🕒 *Time*    ›  ${monospace(time)}
   ༄ 📅 *Date*    ›  ${monospace(date)}
   ༄ 🌍 *Zone*    ›  ${monospace(timeZone)}
+  ༄ 🤖 *Bot*     ›  ${monospace(botName || "ULTRA GURU")}
+  ༄ 💾 *RAM*     ›  ${monospace(ram)}
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬${readmore}\n\n`;
 
       const formatCategory = (category, gmds) => {

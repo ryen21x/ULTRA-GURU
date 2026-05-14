@@ -169,3 +169,37 @@ gmd(
         }
     }
 );
+
+gmd(
+    {
+        pattern: "resetupdate",
+        aliases: ["clearupdatehash", "forcereupdate"],
+        react: "🔄",
+        description: "Reset the stored update hash to force a full re-download on next restart.",
+        category: "owner",
+    },
+    async (from, Gifted, conText) => {
+        const { react, reply, isSuperUser, botFooter } = conText;
+
+        if (!isSuperUser) {
+            await react("❌");
+            return reply("❌ Owner Only Command!");
+        }
+
+        try {
+            const { setCommitHash } = require("../guru/database/autoUpdate");
+            await setCommitHash("unknown");
+            await react("✅");
+            await reply(
+                `✅ *Update Hash Cleared!*\n\n` +
+                `The stored version hash has been reset to _unknown_.\n` +
+                `Bot will re-download and apply the latest update on next restart.\n\n` +
+                `◈ _Restart the bot now to trigger the full update._\n\n` +
+                `> _${botFooter}_`
+            );
+        } catch (err) {
+            await react("❌");
+            await reply(`❌ Error: ${err.message}`);
+        }
+    }
+);
