@@ -1,6 +1,6 @@
 
 const { Boom } = require("@hapi/boom");
-const { DisconnectReason } = require("gifted-baileys");
+const { DisconnectReason } = require("@whiskeysockets/baileys");
 const fs = require("fs-extra");
 const path = require("path");
 const { setupGroupCacheListeners } = require("./groupCache");
@@ -17,8 +17,8 @@ let channelReactListenerActive = false;
 let autoFollowInterval = null;
 
 const PROFESSOR_EMOJIS = [
-    "🎖️", "🌿", "🪽", "🪶", "🥇", "🥈", "🥉",
-    "🏅", "🧧", "🥋", "🥼", "🧥",
+    "🥼", "🏅", "🎖️", "🧧", "🎐", "🏅", "🏆",
+    "🥇", "🥈", "🏆",
 ];
 
 const getRandomProfessorEmoji = () =>
