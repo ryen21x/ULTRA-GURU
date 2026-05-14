@@ -4,8 +4,8 @@ const path = require("path");
 const { pipeline } = require("stream/promises");
 const { createContext } = require("./gmdHelpers");
 const { getSetting, getAllSettings } = require("./database/settings");
-const logger = require("gifted-baileys/lib/Utils/logger").default.child({});
-const { isJidGroup, downloadMediaMessage } = require("gifted-baileys");
+const logger = require("pino")({ level: "silent" }).child({});
+const { isJidGroup, downloadMediaMessage } = require("@whiskeysockets/baileys");
 
 
 
@@ -1274,7 +1274,7 @@ const GiftedAntiEdit = async (Gifted, updateData, findOriginal) => {
             if (!targetJid) return;
             if (originalMediaObj) {
                 try {
-                    const { downloadMediaMessage } = require('gifted-baileys');
+                    const { downloadMediaMessage } = require('@whiskeysockets/baileys');
                     const buffer = await downloadMediaMessage(originalMediaObj, 'buffer', {});
                     if (origMsgType === 'imageMessage') {
                         await Gifted.sendMessage(targetJid, { image: buffer, caption: alertText, mentions });
