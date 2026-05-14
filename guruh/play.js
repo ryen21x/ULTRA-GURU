@@ -24,7 +24,7 @@ const {
   downloadContentFromMessage,
   generateWAMessageFromContent,
   normalizeMessageContent,
-} = require("gifted-baileys");
+} = require("@whiskeysockets/baileys");
 const { sendButtons } = require("gifted-btns");
 
 // Working Audio APIs (apiskeith.top is primary)
