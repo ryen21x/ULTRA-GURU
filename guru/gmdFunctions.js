@@ -103,6 +103,26 @@ const pendingPairingNumber = null;
 function getPairingInfo() { return { isPairingMode: false, phoneNumber: null }; }
 function resetPairingMode() {}
 
+function validateCreds(credsPath) {
+    try {
+        const raw = fs.readFileSync(credsPath, 'utf8');
+        const creds = JSON.parse(raw);
+        const required = ['noiseKey', 'signedIdentityKey', 'registrationId'];
+        const missing = required.filter(k => !creds[k]);
+        if (missing.length > 0) {
+            throw new Error(`Missing required session fields: ${missing.join(', ')}`);
+        }
+        if (creds.me?.id) {
+            console.log(`✅ Session valid — WhatsApp number: ${creds.me.id.split(':')[0].split('@')[0]}`);
+        } else {
+            console.log("✅ Session structure valid (number will show after connect)");
+        }
+        return true;
+    } catch (e) {
+        throw new Error(`❌ SESSION_ID loaded but creds are invalid: ${e.message}`);
+    }
+}
+
 async function processSessionId(sessionId) {
     try {
         // Support both Gifted~ and GURU~ formats
@@ -118,49 +138,37 @@ async function processSessionId(sessionId) {
             throw new Error("❌ Invalid session format. Missing session data");
         }
 
+        if (!fs.existsSync(sessionDir)) {
+            fs.mkdirSync(sessionDir, { recursive: true });
+        }
+
         // Handle base64 session (direct)
         if (b64data.startsWith('H4sI')) {
             try {
                 const compressedData = Buffer.from(b64data, 'base64');
                 const decompressedData = zlib.gunzipSync(compressedData);
-                
-                if (!fs.existsSync(sessionDir)) {
-                    fs.mkdirSync(sessionDir, { recursive: true });
-                }
-                
                 fs.writeFileSync(sessionPath, decompressedData, "utf8");
                 console.log("✅ Session File Loaded (Direct Base64)");
-                return true;
             } catch (gzipError) {
-                console.log("⚠️  Session decompression failed:", gzipError.message);
-                console.log("⚠️  SESSION_ID appears corrupted. Falling back to interactive setup.");
-                return false;
+                throw new Error(`❌ SESSION_ID appears corrupted or invalid (decompression failed): ${gzipError.message}`);
+            }
+        } else {
+            // Try base64 decode + gunzip
+            try {
+                const compressedData = Buffer.from(b64data, 'base64');
+                const decompressedData = zlib.gunzipSync(compressedData);
+                fs.writeFileSync(sessionPath, decompressedData, "utf8");
+                console.log("✅ Session File Loaded (Base64 Decoded)");
+            } catch (decodeError) {
+                // Last resort: treat as raw JSON
+                fs.writeFileSync(sessionPath, b64data, "utf8");
+                console.log("✅ Session File Loaded (Raw Session Data)");
             }
         }
-        
-        // If it's not H4sI, it might be a raw session string
-        // Try to decode as base64 directly
-        try {
-            const compressedData = Buffer.from(b64data, 'base64');
-            const decompressedData = zlib.gunzipSync(compressedData);
-            
-            if (!fs.existsSync(sessionDir)) {
-                fs.mkdirSync(sessionDir, { recursive: true });
-            }
-            
-            fs.writeFileSync(sessionPath, decompressedData, "utf8");
-            console.log("✅ Session File Loaded (Base64 Decoded)");
-            return true;
-        } catch (decodeError) {
-            // If decompression fails, it might be plain text session data
-            if (!fs.existsSync(sessionDir)) {
-                fs.mkdirSync(sessionDir, { recursive: true });
-            }
-            
-            fs.writeFileSync(sessionPath, b64data, "utf8");
-            console.log("✅ Session File Loaded (Raw Session Data)");
-            return true;
-        }
+
+        // Validate the written creds before handing off to Baileys
+        validateCreds(sessionPath);
+        return true;
 
     } catch (e) {
         throw new Error(`❌ Failed to load session: ${e.message}`);
