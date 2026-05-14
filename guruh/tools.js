@@ -2,6 +2,7 @@
 const { gmd, getExtensionFromMime, isTextContent } = require("../guru");
 const axios = require("axios");
 const fs = require("fs").promises;
+const crypto = require("crypto");
 const { sendButtons } = require("gifted-btns");
 
 gmd(
@@ -711,3 +712,199 @@ gmd(
     }
   },
 );
+
+// ─── MORSE ────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "morse",
+  aliases: ["morseencode", "morsecode"],
+  react: "📡",
+  category: "tools",
+  description: "Encode or decode Morse code. Usage: .morse hello / .morse decode ... ---",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Usage:\n`.morse hello` — encode\n`.morse decode ... ---` — decode");
+  const ENC = {
+    A:".-",B:"-...",C:"-.-.",D:"-..",E:".",F:"..-.",G:"--.",H:"....",I:"..",
+    J:".---",K:"-.-",L:".-..",M:"--",N:"-.",O:"---",P:".--.",Q:"--.-",R:".-.",
+    S:"...",T:"-",U:"..-",V:"...-",W:".--",X:"-..-",Y:"-.--",Z:"--..",
+    "0":"-----","1":".----","2":"..---","3":"...--","4":"....-","5":".....",
+    "6":"-....","7":"--...","8":"---..","9":"----."," ":"/",
+  };
+  const DEC = Object.fromEntries(Object.entries(ENC).map(([k, v]) => [v, k]));
+  const text = q.trim();
+  if (text.toLowerCase().startsWith("decode ")) {
+    const morse = text.slice(7).trim();
+    const decoded = morse.split(" ").map(t => t === "/" ? " " : (DEC[t] || "?")).join("");
+    await react("📡");
+    return Gifted.sendMessage(from, {
+      text: `📡 *Morse Decoder*\n\n*Input:* \`${morse}\`\n*Output:* ${decoded}\n\n> _${botFooter}_`,
+    }, { quoted: mek });
+  }
+  const encoded = text.toUpperCase().split("").map(c => ENC[c] || "").filter(Boolean).join(" ");
+  await react("📡");
+  await Gifted.sendMessage(from, {
+    text: `📡 *Morse Encoder*\n\n*Text:* ${text}\n*Morse:* \`${encoded}\`\n\n_Tip: use \`.morse decode ${encoded.slice(0,30)}...\` to reverse_\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── BINARY ───────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "binary",
+  aliases: ["bin", "binarycode", "tobinary"],
+  react: "💻",
+  category: "tools",
+  description: "Encode text to binary or decode binary. Usage: .binary hello / .binary decode 01101000",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Usage:\n`.binary hello` — encode\n`.binary decode 01101000` — decode");
+  const text = q.trim();
+  if (text.toLowerCase().startsWith("decode ")) {
+    try {
+      const decoded = text.slice(7).trim().split(" ").map(b => String.fromCharCode(parseInt(b, 2))).join("");
+      await react("💻");
+      return Gifted.sendMessage(from, {
+        text: `💻 *Binary Decoder*\n\n*Output:* ${decoded}\n\n> _${botFooter}_`,
+      }, { quoted: mek });
+    } catch { return reply("❌ Invalid binary string."); }
+  }
+  const encoded = text.split("").map(c => c.charCodeAt(0).toString(2).padStart(8, "0")).join(" ");
+  await react("💻");
+  await Gifted.sendMessage(from, {
+    text: `💻 *Binary Encoder*\n\n*Text:* ${text}\n*Binary:*\n\`\`\`${encoded}\`\`\`\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── PASSWORD ─────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "password",
+  aliases: ["genpass", "passgen", "pwd", "generatepassword"],
+  react: "🔐",
+  category: "tools",
+  description: "Generate a strong random password. Usage: .password or .password 24",
+}, async (from, Gifted, conText) => {
+  const { react, q, mek, botFooter } = conText;
+  const len = Math.min(Math.max(parseInt(q) || 16, 8), 64);
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+  let password = "";
+  const rand = crypto.randomBytes(len);
+  for (let i = 0; i < len; i++) password += charset[rand[i] % charset.length];
+  const strength = len >= 24 ? "🟢 *Very Strong*" : len >= 16 ? "🟡 *Strong*" : len >= 12 ? "🟠 *Medium*" : "🔴 *Weak*";
+  await react("🔐");
+  await Gifted.sendMessage(from, {
+    text: `🔐 *Password Generator*\n\n\`\`\`${password}\`\`\`\n\n📏 *Length:* ${len} characters\n${strength}\n\n_⚠️ Save it somewhere safe._\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── ENCODE / BASE64 ──────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "encode",
+  aliases: ["base64", "b64"],
+  react: "🔑",
+  category: "tools",
+  description: "Base64 encode or decode text. Usage: .encode hello / .encode decode aGVsbG8=",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Usage:\n`.encode hello` — encode\n`.encode decode aGVsbG8=` — decode");
+  const text = q.trim();
+  if (text.toLowerCase().startsWith("decode ")) {
+    try {
+      const decoded = Buffer.from(text.slice(7).trim(), "base64").toString("utf8");
+      await react("🔑");
+      return Gifted.sendMessage(from, {
+        text: `🔑 *Base64 Decoded*\n\n${decoded}\n\n> _${botFooter}_`,
+      }, { quoted: mek });
+    } catch { return reply("❌ Invalid Base64 string."); }
+  }
+  const encoded = Buffer.from(text).toString("base64");
+  await react("🔑");
+  await Gifted.sendMessage(from, {
+    text: `🔑 *Base64 Encoded*\n\n\`\`\`${encoded}\`\`\`\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── WORDCOUNT ────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "wordcount",
+  aliases: ["wc", "charcount", "textinfo", "textstat"],
+  react: "📊",
+  category: "tools",
+  description: "Analyse word count, characters and reading time. Usage: .wordcount <text> or reply to a message",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, quotedMsg, mek, botFooter } = conText;
+  const extract = (msg) => msg?.conversation || msg?.extendedTextMessage?.text
+    || msg?.imageMessage?.caption || msg?.videoMessage?.caption || "";
+  const text = q?.trim() || extract(quotedMsg);
+  if (!text) return reply("❌ Provide text or reply to a message.\nExample: `.wordcount Hello world`");
+  const words      = text.trim().split(/\s+/).filter(Boolean).length;
+  const chars      = text.length;
+  const noSpaces   = text.replace(/\s/g, "").length;
+  const sentences  = (text.match(/[.!?]+/g) || []).length || 1;
+  const paragraphs = text.split(/\n{2,}/).filter(Boolean).length || 1;
+  const readTime   = Math.ceil(words / 200);
+  const speakTime  = Math.ceil(words / 130);
+  await react("📊");
+  await Gifted.sendMessage(from, {
+    text: `📊 *Text Analysis*\n\n📝 *Words:* ${words}\n🔤 *Characters:* ${chars}\n🔡 *Chars (no spaces):* ${noSpaces}\n📄 *Sentences:* ${sentences}\n📑 *Paragraphs:* ${paragraphs}\n📖 *Read time:* ~${readTime} min\n🎙 *Speak time:* ~${speakTime} min\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── COUNTDOWN ────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "countdown",
+  aliases: ["timeuntil", "daysleft", "daysuntil"],
+  react: "⏳",
+  category: "tools",
+  description: "Countdown to any date. Usage: .countdown 2026-12-25",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Provide a date!\nExample: `.countdown 2026-12-25`");
+  const target = new Date(q.trim());
+  if (isNaN(target.getTime())) return reply("❌ Invalid date. Use YYYY-MM-DD\nExample: `.countdown 2027-01-01`");
+  const now  = new Date();
+  const diff = target - now;
+  if (diff <= 0) return reply("⚠️ That date has already passed!");
+  const days    = Math.floor(diff / 86400000);
+  const hours   = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+  const filled  = Math.min(Math.round((1 - days / 365) * 10), 10);
+  const bar     = "🟩".repeat(filled) + "⬜".repeat(10 - filled);
+  await react("⏳");
+  await Gifted.sendMessage(from, {
+    text: `⏳ *COUNTDOWN*\n\n📅 *Target:* ${target.toDateString()}\n\n${bar}\n\n📆 *${days}* days\n🕐 *${hours}* hours\n⏱ *${minutes}* minutes\n⌚ *${seconds}* seconds\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── REMINDME ─────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "remindme",
+  aliases: ["remind", "reminder", "setreminder"],
+  react: "⏰",
+  category: "tools",
+  description: "Set a personal reminder. Usage: .remindme 10 Take your medicine",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, sender, pushName, botName, botFooter } = conText;
+  if (!q) return reply("❌ Usage: `.remindme <minutes> <message>`\nExample: `.remindme 15 Drink water`");
+  const parts   = q.trim().split(/\s+/);
+  const minutes = parseInt(parts[0]);
+  const message = parts.slice(1).join(" ");
+  if (isNaN(minutes) || minutes < 1 || minutes > 1440) return reply("❌ Minutes must be between 1 and 1440 (max 24h).");
+  if (!message) return reply("❌ Add a reminder message after the minutes.\nExample: `.remindme 10 Call mom`");
+  await react("✅");
+  await reply(`⏰ *Reminder Set!*\n\n📝 *Message:* ${message}\n⏱ *In:* ${minutes} minute${minutes !== 1 ? "s" : ""}\n\n_I'll ping you here when it's time!_\n\n> _${botFooter}_`);
+  setTimeout(async () => {
+    try {
+      await Gifted.sendMessage(from, {
+        text: `⏰ *REMINDER*\n\n👋 Hey *${pushName}*!\n\n📝 ${message}\n\n_Set ${minutes} minute${minutes !== 1 ? "s" : ""} ago_\n\n> _${botName}_`,
+        mentions: [sender],
+      }, { quoted: mek });
+    } catch (e) { console.error("[remindme] error:", e.message); }
+  }, minutes * 60 * 1000);
+});

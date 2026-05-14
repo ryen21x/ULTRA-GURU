@@ -2,6 +2,7 @@
 const { gmd } = require("../guru");
 const { getSetting } = require("../guru/database/settings");
 const axios = require("axios");
+const crypto = require("crypto");
 
 function mathCalc(expr) {
   const safe = expr.replace(/[^0-9+\-*/%.() \t]/g, "");
@@ -683,3 +684,335 @@ gmd(
     );
   }
 );
+
+// ─── SHIP ─────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "ship",
+  aliases: ["lovemeter", "match", "compatibility"],
+  react: "💘",
+  category: "fun",
+  description: "Check love compatibility between two names. Usage: .ship Name1 | Name2",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q || !q.includes("|")) return reply("❌ Usage: `.ship Name1 | Name2`\nExample: `.ship Romeo | Juliet`");
+  const [n1, n2] = q.split("|").map(s => s.trim());
+  if (!n1 || !n2) return reply("❌ Both names are required.");
+  const combined = (n1 + n2).toLowerCase().split("").sort().join("");
+  let pct = 0;
+  for (let i = 0; i < combined.length; i++) pct += combined.charCodeAt(i);
+  pct = (pct % 71) + 30;
+  const bar = Math.round(pct / 10);
+  const filled = "❤️".repeat(bar);
+  const empty  = "🤍".repeat(10 - bar);
+  const verdict = pct >= 85 ? "💞 *SOULMATES!*" : pct >= 70 ? "💕 *Great Match!*" : pct >= 50 ? "💛 *It Could Work*" : "💔 *Not Really*";
+  await react("💘");
+  await Gifted.sendMessage(from, {
+    text: `💘 *SHIP METER*\n\n👤 *${n1}*\n💕 meets 💕\n👤 *${n2}*\n\n${filled}${empty}\n\n❤️ *Compatibility: ${pct}%*\n${verdict}\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── TRUTH ────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "truth",
+  aliases: ["truthq", "truthquestion"],
+  react: "🎯",
+  category: "fun",
+  description: "Get a random truth question for truth or dare",
+}, async (from, Gifted, conText) => {
+  const { react, mek, botFooter } = conText;
+  const pool = [
+    "What's the most embarrassing thing you've done in public?",
+    "Have you ever lied to your best friend about something important?",
+    "What's the last thing you deleted from your phone before handing it to someone?",
+    "Who in this chat do you have a secret crush on?",
+    "What's the worst thing you've ever done and never told anyone?",
+    "Have you ever cheated in an exam? Be specific.",
+    "What's a habit you have that you're ashamed of?",
+    "What's the pettiest reason you've ever blocked someone?",
+    "What's the most childish thing you still do when no one is watching?",
+    "Have you ever stolen something, even if small?",
+    "What's your biggest insecurity?",
+    "What's the most embarrassing text you've sent to the wrong person?",
+    "Who was your first love and what happened?",
+    "What's a lie you've told that you still haven't corrected?",
+    "What's the strangest thing you've Googled this month?",
+    "Have you ever pretended to be sick to avoid someone?",
+    "Who in your contacts would you never want to see your screen time?",
+  ];
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  await react("🎯");
+  await Gifted.sendMessage(from, {
+    text: `🎯 *TRUTH QUESTION*\n\n❓ _${q}_\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── DARE ─────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "dare",
+  aliases: ["dareq", "darechallenge"],
+  react: "🔥",
+  category: "fun",
+  description: "Get a random dare challenge",
+}, async (from, Gifted, conText) => {
+  const { react, mek, botFooter } = conText;
+  const pool = [
+    "Send a voice note singing the chorus of your favourite song right now.",
+    "Change your WhatsApp status to 'I talk to myself daily' for 30 minutes.",
+    "Tag someone and tell them they are your hero — no explanation.",
+    "Send a message to the last person you texted using only food emojis.",
+    "Post a selfie with the funniest face you can make in this group.",
+    "Call someone from this group and say 'I know what you did last summer' then hang up.",
+    "Write a 3-sentence love letter to someone in this chat (you pick who).",
+    "Send a voice note of you imitating your favourite celebrity for at least 15 seconds.",
+    "Reply to the last 5 messages in this chat with only one emoji each.",
+    "Set your profile picture to a potato for 1 hour.",
+    "Send a text to your mum saying 'I have a confession' and screenshot the reply.",
+    "Let the group rename your WhatsApp name for the next 10 minutes.",
+    "Do 15 push-ups and send a voice note counting them out loud.",
+    "Record a voice note of you reciting the alphabet backwards.",
+    "Type a paragraph using only your nose and send it.",
+    "Send a voice note saying 'I love Mondays' as convincingly as possible.",
+    "Put your phone down for the next 5 minutes — no cheating.",
+  ];
+  const d = pool[Math.floor(Math.random() * pool.length)];
+  await react("🔥");
+  await Gifted.sendMessage(from, {
+    text: `🔥 *DARE CHALLENGE*\n\n💪 _${d}_\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── RIZZ ─────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "rizz",
+  aliases: ["pickup", "flirt", "pickupline"],
+  react: "😏",
+  category: "fun",
+  description: "Generate a pickup line. Usage: .rizz or .rizz @name",
+}, async (from, Gifted, conText) => {
+  const { react, q, mek, mentioned, botFooter } = conText;
+  const lines = [
+    "Are you a magician? Whenever I look at you, everyone else disappears.",
+    "Is your name Wi-Fi? Because I'm feeling a serious connection.",
+    "Are you a bank loan? Because you've got my full interest.",
+    "Do you believe in love at first text, or should I message again?",
+    "Are you a charger? Because I literally die without you.",
+    "Are you a keyboard? Because you're exactly my type.",
+    "Is your name Google? Because you have everything I've been searching for.",
+    "Are you a time traveller? I see you in every version of my future.",
+    "Do you have a map? I keep getting lost in your eyes.",
+    "If you were a vegetable you'd be a *cute*-cumber.",
+    "I must be a snowflake because I've fallen for you.",
+    "Are you Australian? Because you meet all of my koala-fications.",
+    "Do you like science? Because we have great chemistry.",
+    "You must be a star — I can't stop staring at you from a distance.",
+  ];
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  const target = mentioned?.[0] ? `@${mentioned[0].split("@")[0]}` : (q?.trim() || null);
+  const mentions = mentioned?.[0] ? [mentioned[0]] : [];
+  const header = target ? `😏 *Rizz for ${target}*` : `😏 *Pickup Line*`;
+  await react("😏");
+  await Gifted.sendMessage(from, {
+    text: `${header}\n\n"${line}"\n\n> _${botFooter}_`,
+    mentions,
+  }, { quoted: mek });
+});
+
+// ─── ROAST ────────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "roast",
+  aliases: ["clap", "diss", "burn"],
+  react: "🔥",
+  category: "fun",
+  description: "Roast someone. Usage: .roast @user or .roast name",
+}, async (from, Gifted, conText) => {
+  const { react, q, mek, mentioned, pushName, botFooter } = conText;
+  const roasts = [
+    "Your Wi-Fi password is probably the only secret you can keep.",
+    "You bring everyone so much joy — especially when you leave.",
+    "I'd agree with you but then we'd both be wrong.",
+    "You're not completely useless — you can always serve as a bad example.",
+    "You're the reason shampoo has instructions on the bottle.",
+    "Even Google can't find a good reason to take you seriously.",
+    "I've seen better comebacks in a broken mirror.",
+    "You're proof that evolution can occasionally go in reverse.",
+    "Your village called — they still want their idiot back.",
+    "I'd call you a clown, but clowns are actually funny.",
+    "If brains were petrol, you wouldn't have enough to power an ant's scooter.",
+    "You have your whole life to be an idiot — why not take today off?",
+    "I'd roast you harder but my mum said I'm not allowed to burn trash.",
+    "You're like a cloud — when you disappear, it's a beautiful day.",
+    "Calling you an idiot would be an insult to all the idiots out there.",
+    "I've met parking tickets with more charm than you.",
+    "You're the human equivalent of a participation trophy.",
+  ];
+  const roast = roasts[Math.floor(Math.random() * roasts.length)];
+  const target = mentioned?.[0] ? `@${mentioned[0].split("@")[0]}` : (q?.trim() || pushName);
+  const mentions = mentioned?.[0] ? [mentioned[0]] : [];
+  await react("🔥");
+  await Gifted.sendMessage(from, {
+    text: `🔥 *Roasting ${target}*\n\n"${roast}"\n\n💀 _Don't take it personally_ 😂\n\n> _${botFooter}_`,
+    mentions,
+  }, { quoted: mek });
+});
+
+// ─── COMPLIMENT ───────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "compliment",
+  aliases: ["praise", "admire", "appreciate"],
+  react: "💐",
+  category: "fun",
+  description: "Send a sweet compliment. Usage: .compliment @user",
+}, async (from, Gifted, conText) => {
+  const { react, q, mek, mentioned, pushName, botFooter } = conText;
+  const compliments = [
+    "You light up every room you walk into. 🌟",
+    "You have an incredible ability to make everyone feel genuinely seen. 💫",
+    "Your positivity is contagious in the best possible way. ☀️",
+    "You are far more extraordinary than you give yourself credit for. ✨",
+    "Everything you do carries a quiet touch of brilliance. 🧠",
+    "Your kindness makes the world measurably better. 💛",
+    "You inspire people around you without even trying. 🎯",
+    "The way you handle things is genuinely impressive. 💪",
+    "You have a heart of pure gold and it shows. 👑",
+    "The world is legitimately better because you're in it. 🌎",
+    "Your smile could fix a bad day for anyone who sees it. 😊",
+    "You have an energy that draws people to you naturally. ⚡",
+    "Your strength — seen and unseen — is remarkable. 🏆",
+    "You make difficult things look effortless, and that's a gift. 🎁",
+  ];
+  const line = compliments[Math.floor(Math.random() * compliments.length)];
+  const target = mentioned?.[0] ? `@${mentioned[0].split("@")[0]}` : (q?.trim() || "you");
+  const mentions = mentioned?.[0] ? [mentioned[0]] : [];
+  await react("💐");
+  await Gifted.sendMessage(from, {
+    text: `💐 *Compliment for ${target}*\n\n${line}\n\n_Sent with love by ${pushName}_ 💌\n\n> _${botFooter}_`,
+    mentions,
+  }, { quoted: mek });
+});
+
+// ─── CONFESSION ───────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "confession",
+  aliases: ["confess", "anonymous", "anon"],
+  react: "🤫",
+  category: "fun",
+  description: "Post an anonymous confession to the group. Usage: .confession <text>",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, isGroup, mek, botName, botFooter } = conText;
+  if (!isGroup) return reply("❌ This command only works inside groups.");
+  if (!q) return reply("❌ Provide your confession!\nExample: `.confession I still sleep with the lights on`");
+  await react("🤫");
+  await reply("✅ Your confession has been posted anonymously.");
+  await Gifted.sendMessage(from, {
+    text: `🤫 *ANONYMOUS CONFESSION*\n╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍\n\n"${q.trim()}"\n\n╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍\n> _Identity protected by ${botName}_`,
+  });
+});
+
+// ─── ZODIAC ───────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "zodiac",
+  aliases: ["horoscope", "starsign", "star"],
+  react: "⭐",
+  category: "fun",
+  description: "Get your zodiac sign info. Usage: .zodiac leo",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Provide your star sign!\n\nSigns: Aries Taurus Gemini Cancer Leo Virgo Libra Scorpio Sagittarius Capricorn Aquarius Pisces\n\nExample: `.zodiac leo`");
+  const signs = {
+    aries:       { e:"♈", d:"Mar 21 – Apr 19", el:"🔥 Fire", p:"Mars",    t:"Courageous, energetic, impulsive, pioneering",    l:"Red · Tuesday · 9" },
+    taurus:      { e:"♉", d:"Apr 20 – May 20", el:"🌍 Earth",p:"Venus",   t:"Reliable, patient, stubborn, sensual",             l:"Green · Friday · 6" },
+    gemini:      { e:"♊", d:"May 21 – Jun 20", el:"💨 Air",  p:"Mercury", t:"Curious, adaptable, witty, indecisive",            l:"Yellow · Wednesday · 5" },
+    cancer:      { e:"♋", d:"Jun 21 – Jul 22", el:"💧 Water",p:"Moon",    t:"Nurturing, intuitive, loyal, moody",               l:"Silver · Monday · 2" },
+    leo:         { e:"♌", d:"Jul 23 – Aug 22", el:"🔥 Fire", p:"Sun",     t:"Confident, generous, dramatic, warm-hearted",      l:"Gold · Sunday · 1" },
+    virgo:       { e:"♍", d:"Aug 23 – Sep 22", el:"🌍 Earth",p:"Mercury", t:"Analytical, helpful, meticulous, caring",          l:"Navy · Wednesday · 5" },
+    libra:       { e:"♎", d:"Sep 23 – Oct 22", el:"💨 Air",  p:"Venus",   t:"Diplomatic, charming, fair, indecisive",           l:"Pink · Friday · 6" },
+    scorpio:     { e:"♏", d:"Oct 23 – Nov 21", el:"💧 Water",p:"Pluto",   t:"Intense, passionate, secretive, determined",       l:"Crimson · Tuesday · 8" },
+    sagittarius: { e:"♐", d:"Nov 22 – Dec 21", el:"🔥 Fire", p:"Jupiter", t:"Adventurous, optimistic, blunt, free-spirited",    l:"Purple · Thursday · 3" },
+    capricorn:   { e:"♑", d:"Dec 22 – Jan 19", el:"🌍 Earth",p:"Saturn",  t:"Disciplined, ambitious, reserved, practical",      l:"Brown · Saturday · 10" },
+    aquarius:    { e:"♒", d:"Jan 20 – Feb 18", el:"💨 Air",  p:"Uranus",  t:"Independent, innovative, eccentric, humanitarian", l:"Sky blue · Saturday · 11" },
+    pisces:      { e:"♓", d:"Feb 19 – Mar 20", el:"💧 Water",p:"Neptune", t:"Compassionate, artistic, dreamy, empathetic",      l:"Sea green · Thursday · 7" },
+  };
+  const key = q.trim().toLowerCase();
+  const sign = signs[key];
+  if (!sign) return reply("❌ Unknown sign. Use: aries taurus gemini cancer leo virgo libra scorpio sagittarius capricorn aquarius pisces");
+  const name = key.charAt(0).toUpperCase() + key.slice(1);
+  await react("⭐");
+  await Gifted.sendMessage(from, {
+    text: `${sign.e} *${name}*\n\n📅 *Dates:* ${sign.d}\n🌊 *Element:* ${sign.el}\n🪐 *Ruling Planet:* ${sign.p}\n\n✨ *Traits:*\n${sign.t}\n\n🍀 *Lucky (Color · Day · Number):*\n${sign.l}\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── FAKEID ───────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "fakeid",
+  aliases: ["fakeprofile", "randomperson", "fakeidentity"],
+  react: "🪪",
+  category: "fun",
+  description: "Generate a random fake identity for fun",
+}, async (from, Gifted, conText) => {
+  const { react, mek, botFooter } = conText;
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const first  = ["James","Emma","Oliver","Sophia","Lucas","Ava","Noah","Mia","Liam","Isabella","Ethan","Charlotte","Aiden","Amelia","Mason","Zara","Caleb","Layla","Jayden","Nadia"];
+  const last   = ["Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Taylor","Anderson","Thomas","White","Martin","Lee","Thompson","Osei","Nkosi","Kamau","Diallo","Mensah"];
+  const jobs   = ["Software Engineer","Chef","Doctor","Pilot","Graphic Designer","Nurse","Teacher","Lawyer","Architect","Journalist","Mechanic","Entrepreneur","Photographer","Accountant","Data Scientist"];
+  const cities = ["New York","London","Nairobi","Paris","Tokyo","Sydney","Dubai","Toronto","Lagos","Berlin","Cape Town","Mumbai","Singapore","Accra","Cairo","Kampala","Casablanca"];
+  const hobbies = ["Reading","Gaming","Cooking","Hiking","Photography","Music Production","Painting","Swimming","Cycling","Content Creation","Travelling","Dancing","Coding","Gardening","Podcasting"];
+  const bloods  = ["A+","A-","B+","B-","O+","O-","AB+","AB-"];
+  const name   = `${pick(first)} ${pick(last)}`;
+  const age    = Math.floor(Math.random() * 38) + 18;
+  const gender = Math.random() < 0.5 ? "Male 👨" : "Female 👩";
+  const id     = Math.floor(Math.random() * 90000000 + 10000000);
+  const phone  = `+${Math.floor(Math.random() * 9) + 1}${Array.from({ length: 9 }, () => Math.floor(Math.random() * 10)).join("")}`;
+  const height = `${Math.floor(Math.random() * 40) + 155} cm`;
+  await react("🪪");
+  await Gifted.sendMessage(from, {
+    text: `🪪 *FAKE IDENTITY*\n_For entertainment only_\n╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍\n👤 *Name:*    ${name}\n🎂 *Age:*     ${age} years\n🚻 *Gender:*  ${gender}\n💼 *Job:*     ${pick(jobs)}\n🌍 *City:*    ${pick(cities)}\n🎯 *Hobby:*   ${pick(hobbies)}\n🩸 *Blood:*   ${pick(bloods)}\n📏 *Height:*  ${height}\n📱 *Phone:*   ${phone}\n🪪 *ID:*      #${id}\n╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍\n> _${botFooter}_`,
+  }, { quoted: mek });
+});
+
+// ─── FAKECHAT ─────────────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "fakechat",
+  aliases: ["fakemsg", "fakedm", "fakemessage"],
+  react: "💬",
+  category: "fun",
+  description: "Generate a fake WhatsApp-style chat bubble. Usage: .fakechat Name | Message",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q || !q.includes("|")) return reply("❌ Usage: `.fakechat Name | Message`\nExample: `.fakechat Elon Musk | I'm buying WhatsApp next`");
+  const [rawName, ...msgParts] = q.split("|");
+  const name = rawName.trim();
+  const msg  = msgParts.join("|").trim();
+  if (!name || !msg) return reply("❌ Both name and message are required.");
+  const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const wrap = (str, maxLen) => {
+    const words = str.split(" "), lines = [];
+    let cur = "";
+    for (const w of words) {
+      if ((cur + " " + w).trim().length > maxLen) { lines.push(cur.trim()); cur = w; }
+      else cur = (cur + " " + w).trim();
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  };
+  const msgLines = wrap(msg, 28);
+  const width    = Math.max(name.length + 2, ...msgLines.map(l => l.length), 20);
+  const border   = "─".repeat(width + 2);
+  const pad      = str => str + " ".repeat(width - str.length);
+  const body     = msgLines.map(l => `│ ${pad(l)} │`).join("\n");
+  const ts       = `${" ".repeat(width - time.length - 3)}${time} ✓✓`;
+  await react("💬");
+  await Gifted.sendMessage(from, {
+    text: `┌${border}┐\n│ 💬 *${pad(name)}* │\n├${border}┤\n${body}\n│ ${ts} │\n└${border}┘\n\n> _${botFooter}_`,
+  }, { quoted: mek });
+});

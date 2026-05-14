@@ -12,7 +12,7 @@ const { gmd, gmdSticker } = require("../guru"),
   {
     generateWAMessageContent,
     generateWAMessageFromContent,
-  } = require("@whiskeysockets/baileys"),
+  } = require("gifted-baileys"),
   { sendButtons } = require("gifted-btns"),
   { StickerTypes } = require("wa-sticker-formatter");
 
@@ -687,3 +687,33 @@ gmd(
     }
   },
 );
+
+// ─── URBAN DICTIONARY ─────────────────────────────────────────────────────────
+
+gmd({
+  pattern: "urban",
+  aliases: ["ud", "slang", "urbandict"],
+  react: "📖",
+  category: "search",
+  description: "Look up any word on Urban Dictionary. Usage: .urban slay",
+}, async (from, Gifted, conText) => {
+  const { reply, react, q, mek, botFooter } = conText;
+  if (!q) return reply("❌ Provide a word!\nExample: `.urban no cap`");
+  try {
+    await react("🔍");
+    const res = await axios.get(`https://api.urbandictionary.com/v0/define?term=${encodeURIComponent(q)}`, { timeout: 15000 });
+    const entry = res.data?.list?.[0];
+    if (!entry) return reply(`❌ No definition found for *"${q}"*`);
+    const def = entry.definition.replace(/\[|\]/g, "").slice(0, 600);
+    const ex  = (entry.example || "").replace(/\[|\]/g, "").slice(0, 250);
+    const up  = entry.thumbs_up || 0;
+    const dn  = entry.thumbs_down || 0;
+    await react("✅");
+    await Gifted.sendMessage(from, {
+      text: `📖 *Urban Dictionary*\n\n🔤 *Word:* ${q}\n\n*Definition:*\n${def}\n${ex ? `\n*Example:*\n_${ex}_\n` : ""}\n👍 ${up}  👎 ${dn}\n\n> _${botFooter}_`,
+    }, { quoted: mek });
+  } catch {
+    await react("❌");
+    reply("❌ Failed to fetch definition. Try again.");
+  }
+});
