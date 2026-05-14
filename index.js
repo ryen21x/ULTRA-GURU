@@ -241,8 +241,7 @@ async function startGifted() {
 │✵│▸ ⚡ *PREFIX:* [ ${s.PREFIX || d.PREFIX} ]
 │✵│▸ ⚙️ *MODE:* ${md}
 │✵│▸ 👑 *OWNER:* ${s.OWNER_NUMBER || d.OWNER_NUMBER}
-│✵│▸ 📺 *TUTORIALS:* ${s.YT || d.YT}
-│✵│▸ 📡 *UPDATES:* ${s.NEWSLETTER_URL || d.NEWSLETTER_URL}
+│✵│▸ 📲 *TELEGRAM:* https://t.me/GURU_TECHLAB
 ╰──────────────────────────────⊷
 > _Note: Bot may take a few seconds/minutes to sync._
 > ✨ _${s.CAPTION || d.CAPTION}_`;
