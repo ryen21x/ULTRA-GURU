@@ -17,173 +17,65 @@ const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const { Readable } = require('stream');
 ffmpeg.setFfmpegPath(ffmpegPath);
-const readline = require('readline');
 
 const sessionDir = path.join(__dirname, "session");
 const sessionPath = path.join(sessionDir, "creds.json");
 
 // ============ HOST DETECTION ============
 function detectHostEnvironment() {
+    if (process.env.KATABAMP) return 'katabamp';
     if (process.env.PTERODACTYL || process.env.PANEL) return 'pterodactyl';
     if (process.env.KOYEB) return 'koyeb';
     if (process.env.RENDER) return 'render';
     if (process.env.HEROKU || process.env.DYNO) return 'heroku';
     if (process.env.RAILWAY) return 'railway';
     if (process.env.REPL_ID || process.env.REPL_OWNER) return 'replit';
-    if (require('os').platform() !== 'win32' && !process.env.PANEL) return 'vps';
+    if (require('os').platform() !== 'win32') return 'vps';
     return 'unknown';
 }
 
-// ============ PROMPT USER FOR INPUT (PANEL MODE) ============
-function createPrompt() {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    return rl;
-}
-
-async function promptUserForSession() {
-    const rl = createPrompt();
-    
-    console.log(`
-╔══════════════════════════════════════════════════════════════════╗
-║                    📱 ULTRA GURU BOT SETUP                       ║
-╠══════════════════════════════════════════════════════════════════╣
-║                                                                  ║
-║  Please choose how you want to connect:                         ║
-║                                                                  ║
-║  ┌────────────────────────────────────────────────────────────┐  ║
-║  │  OPTION 1: PHONE NUMBER (Pairing Code)                     │  ║
-║  │  • Enter your phone number with country code               │  ║
-║  │  • Bot will generate an 8-digit pairing code               │  ║
-║  │  • Enter code in WhatsApp → Linked Devices                 │  ║
-║  └────────────────────────────────────────────────────────────┘  ║
-║                                                                  ║
-║  ┌────────────────────────────────────────────────────────────┐  ║
-║  │  OPTION 2: EXISTING SESSION ID                             │  ║
-║  │  • Paste your existing session ID                          │  ║
-║  │  • Bot will load session directly                          │  ║
-║  └────────────────────────────────────────────────────────────┘  ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
-    `);
-    
-    return new Promise((resolve) => {
-        rl.question("Enter 1 for Phone Number (Pairing) or 2 for Session ID: ", async (choice) => {
-            if (choice === '1') {
-                rl.question("📱 Enter your phone number with country code (e.g., 254XXXXXXXXX): ", async (phoneNumber) => {
-                    const cleanedPhone = phoneNumber.replace(/[^0-9]/g, '');
-                    if (cleanedPhone.length < 10) {
-                        console.log("❌ Invalid phone number format!");
-                        rl.close();
-                        resolve(null);
-                    } else {
-                        console.log(`✅ Pairing mode selected for: ${cleanedPhone}`);
-                        rl.close();
-                        resolve({ type: 'pairing', value: cleanedPhone });
-                    }
-                });
-            } else if (choice === '2') {
-                rl.question("🔐 Paste your session ID (must start with GURU~ or Gifted~): ", async (sessionId) => {
-                    if (!sessionId.startsWith('GURU~') && !sessionId.startsWith('Gifted~')) {
-                        console.log("❌ Invalid session ID format! Must start with GURU~ or Gifted~");
-                        rl.close();
-                        resolve(null);
-                    } else {
-                        console.log("✅ Session ID provided");
-                        rl.close();
-                        resolve({ type: 'session', value: sessionId });
-                    }
-                });
-            } else {
-                console.log("❌ Invalid choice! Please enter 1 or 2.");
-                rl.close();
-                resolve(null);
-            }
-        });
-    });
-}
-
-// ============ SESSION LOADER (NO EXTERNAL SERVER) ============
-let pendingPairingNumber = null;
-let isPairingMode = false;
-
+// ============ SESSION LOADER ============
 async function loadSession() {
     const hostEnv = detectHostEnvironment();
     console.log(`🖥️ Detected Environment: ${hostEnv.toUpperCase()}`);
-    
+
     try {
-        // Clear old session files
+        // Clear old session credential files (keep .db files used by SQLite auth)
         if (fs.existsSync(sessionDir)) {
             const allFiles = fs.readdirSync(sessionDir);
             allFiles.forEach(f => {
-                try { fs.unlinkSync(path.join(sessionDir, f)); } catch (e) {}
+                if (!f.endsWith('.db')) {
+                    try { fs.unlinkSync(path.join(sessionDir, f)); } catch (e) {}
+                }
             });
         }
 
-        let sessionId = config.SESSION_ID;
-        
-        // ============ HEROKU MODE ============
-        if (hostEnv === 'heroku') {
-            console.log("☁️ Heroku mode detected - reading from environment variables");
-            
-            if (!sessionId || typeof sessionId !== 'string') {
-                throw new Error("❌ SESSION_ID is missing in Heroku environment variables");
-            }
-            
-            // Check if pairing mode is requested on Heroku
-            if (sessionId.startsWith('PAIR:')) {
-                const phoneNumber = sessionId.replace('PAIR:', '').trim();
-                console.log(`📱 Pairing mode activated for: ${phoneNumber}`);
-                isPairingMode = true;
-                pendingPairingNumber = phoneNumber;
-                return true;
-            }
-            
-            // Normal session loading on Heroku
-            return await processSessionId(sessionId);
+        const sessionId = config.SESSION_ID;
+
+        if (!sessionId || typeof sessionId !== 'string' || sessionId.trim() === '') {
+            console.error("╔══════════════════════════════════════════════════════════╗");
+            console.error("║  ❌  SESSION_ID is not set!                              ║");
+            console.error("║  Add SESSION_ID to your environment variables and        ║");
+            console.error("║  restart the bot.                                        ║");
+            console.error("║  Format:  SESSION_ID=GURU~xxxxxxxxxxxxxxxx...            ║");
+            console.error("╚══════════════════════════════════════════════════════════╝");
+            process.exit(1);
         }
-        
-        // ============ PANEL MODE (Pterodactyl, Koyeb, Render, VPS, etc.) ============
-        console.log("🖥️ Panel/VPS mode detected - interactive setup");
-        
-        // Check if SESSION_ID is already set in environment
-        if (sessionId && sessionId !== '') {
-            console.log("📦 SESSION_ID found in environment variables");
-            
-            if (sessionId.startsWith('PAIR:')) {
-                const phoneNumber = sessionId.replace('PAIR:', '').trim();
-                console.log(`📱 Pairing mode activated for: ${phoneNumber}`);
-                isPairingMode = true;
-                pendingPairingNumber = phoneNumber;
-                return true;
-            }
-            
-            return await processSessionId(sessionId);
-        }
-        
-        // No SESSION_ID set - prompt user
-        const userChoice = await promptUserForSession();
-        
-        if (!userChoice) {
-            throw new Error("❌ No valid option selected. Please restart the bot.");
-        }
-        
-        if (userChoice.type === 'pairing') {
-            console.log(`📱 Pairing mode activated for: ${userChoice.value}`);
-            isPairingMode = true;
-            pendingPairingNumber = userChoice.value;
-            return true;
-        } else {
-            return await processSessionId(userChoice.value);
-        }
-        
+
+        console.log("📦 SESSION_ID found — loading session...");
+        return await processSessionId(sessionId.trim());
+
     } catch (e) {
         console.error("❌ Session Error:", e.message);
         throw e;
     }
 }
+
+// Stubs kept for backwards-compatibility with any plugin that imports these
+const isPairingMode = false;
+const pendingPairingNumber = null;
+function getPairingInfo() { return { isPairingMode: false, phoneNumber: null }; }
+function resetPairingMode() {}
 
 async function processSessionId(sessionId) {
     try {
