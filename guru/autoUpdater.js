@@ -53,19 +53,6 @@ const runUpdate = async (repo, Gifted, ownerJid) => {
 
     console.log(`🔄 [AutoUpdate] New update detected!\n   ↳ Author: ${authorName}\n   ↳ Date: ${commitDate}\n   ↳ Message: ${commitMessage}`);
 
-    if (Gifted && ownerJid) {
-        try {
-            await Gifted.sendMessage(ownerJid, {
-                text:
-                    `🔄 *Auto-Update In Progress*\n\n` +
-                    `A new update was found and is being applied automatically.\n\n` +
-                    `◈ 👤 Author   ⤳ ${authorName}\n` +
-                    `◈ 📅 Date     ⤳ ${commitDate}\n` +
-                    `◈ 💬 Changes  ⤳ ${commitMessage}\n\n` +
-                    `_Bot will restart automatically when done._`,
-            });
-        } catch (_) {}
-    }
 
     const repoName = repo.split("/")[1];
     const zipPath = path.join(__dirname, "..", `${repoName}-main.zip`);
@@ -143,13 +130,6 @@ const checkAndAutoUpdate = async (Gifted) => {
 
         if (updated) {
             console.log("✅ [AutoUpdate] Update applied! Restarting in 3 seconds...");
-            if (Gifted && ownerJid) {
-                try {
-                    await Gifted.sendMessage(ownerJid, {
-                        text: "✅ *Auto-Update Complete!* Bot is restarting now...",
-                    });
-                } catch (_) {}
-            }
             setTimeout(() => process.exit(0), 3000);
         }
     } catch (err) {
